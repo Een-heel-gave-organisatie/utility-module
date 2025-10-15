@@ -1,0 +1,15 @@
+{
+  "connectorName": "utility",
+  "operationName": "piiFilter",
+  "title": "PII Filter",
+  "help": "<h1>PII Filter</h1><p>Filters out sensitive headers and response payload containing personally identifiable information (PII). Automatically detects and removes sensitive data including credit cards, SSNs, emails, and phone numbers.</p>",
+  "elements": [
+    {
+      "type": "attributeGroup",
+      "value": {
+        "groupName": "Generic",
+        "elements": []
+      }
+    }
+  ]
+}

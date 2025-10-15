@@ -17,13 +17,13 @@
   ~ under the License.
   ~
   -->
-<connector>
-    <component name="utility" package="org.wso2.carbon.connector">
-        <dependency component="logging"/>
-        <dependency component="filters"/>
-        <description>WSO2 Utility Connector with Logging and Filtering capabilities</description>
-    </component>
-    <displayName>Utility</displayName>
-    <icon>icon/icon-small.gif</icon>
-    <type>module</type>
-</connector>
+<component name="filters" type="synapse/template" displayName="Filters">
+    <subComponents>
+        <component name="piiFilter">
+            <file>piiFilter.xml</file>
+            <description>PII Filter mediator that filters sensitive headers and payload data</description>
+        </component>
+    </subComponents>
+    <icon>filters/icon-small.png</icon>
+    <description>Data filtering utilities for security and privacy</description>
+</component>

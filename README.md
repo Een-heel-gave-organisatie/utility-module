@@ -1,27 +1,34 @@
 # Utility Module Overview
 
-The Utility Module allows you to do math function such as generating a random integer, string function such as transform
-a string to uppercase and lowercase, get the length of a string, generate a random UUID, check a string against a
-regular expression.
+The Utility Module provides logging and filtering capabilities for WSO2 integration scenarios. This module focuses on auditing and security features to help monitor and protect sensitive data in your integration flows.
 
-| Package   | Functions                                                                                                                                                         |
-|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Date      | Get current date                                                                                                                                                  |
-| Math      | Generate random integer                                                                                                                                           |
-| String    | Transform string to lowercase<br/>Transform string to uppercase<br/> Get length of a string<br/>Check a string with regular expression<br/>Generate a random UUID |
-| Signature | Generate HMAC signature for the payload<br/>Verify the payload using a signature                                                                                  |
+| Package | Functions                                                                                                    |
+|---------|--------------------------------------------------------------------------------------------------------------|
+| Logging | Audit Log - Logs timestamp, request path, invoker address, and user agent from message context             |
+| Filters | PII Filter - Filters sensitive headers and payload data containing personally identifiable information (PII) |
 
-To see the available Utility Module, navigate to
-the [connector store](https://store.wso2.com/store/assets/esbconnector/list) and search for "Utility".
+## Features
+
+### Logging Set
+- **Audit Log**: Automatically captures and logs:
+  - Current timestamp
+  - Request path from message context
+  - Invoker's IP address
+  - User agent information
+  - No parameters required - all data extracted from context
+
+### Filters Set  
+- **PII Filter**: Security-focused filtering that:
+  - Removes sensitive headers (Authorization, Cookie, API keys, etc.)
+  - Detects and filters PII in response payloads (credit cards, SSNs, emails, phone numbers)
+  - Drops sensitive data to prevent data leaks
+  - No configuration needed - uses built-in pattern matching
 
 ## Compatibility
 
-| Connector version                                                    | Supported product versions |
-|----------------------------------------------------------------------|----------------------------|
-| [2.0.0](https://github.com/wso2-extensions/mediation-utility-module) | MI 4.4.0                   |
-| [1.0.2](https://github.com/wso2-extensions/mediation-utility-module) | MI 4.1.0, MI 4.0.0         |
-
-For older versions, see the details in the connector store.
+| Connector version | Supported product versions |
+|-------------------|----------------------------|
+| 2.0.2-SNAPSHOT    | MI 4.x                    |
 
 ## Building from the source
 

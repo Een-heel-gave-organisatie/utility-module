@@ -1,0 +1,15 @@
+{
+  "connectorName": "utility",
+  "operationName": "auditLog",
+  "title": "Audit Log",
+  "help": "<h1>Audit Log</h1><p>Logs audit information including timestamp, request path, invoker address, and user agent. Gets all information from the message context without requiring parameters.</p>",
+  "elements": [
+    {
+      "type": "attributeGroup",
+      "value": {
+        "groupName": "Generic",
+        "elements": []
+      }
+    }
+  ]
+}

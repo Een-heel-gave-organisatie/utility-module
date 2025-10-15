@@ -17,13 +17,13 @@
   ~ under the License.
   ~
   -->
-<connector>
-    <component name="utility" package="org.wso2.carbon.connector">
-        <dependency component="logging"/>
-        <dependency component="filters"/>
-        <description>WSO2 Utility Connector with Logging and Filtering capabilities</description>
-    </component>
-    <displayName>Utility</displayName>
-    <icon>icon/icon-small.gif</icon>
-    <type>module</type>
-</connector>
+<component name="logging" type="synapse/template" displayName="Logging">
+    <subComponents>
+        <component name="auditLog">
+            <file>auditLog.xml</file>
+            <description>Audit Log mediator that logs timestamp, request path, invoker address and user agent</description>
+        </component>
+    </subComponents>
+    <icon>logging/icon-log.png</icon>
+    <description>Logging utilities for auditing and monitoring</description>
+</component>

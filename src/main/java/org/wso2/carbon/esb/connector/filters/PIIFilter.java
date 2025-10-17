@@ -65,8 +65,8 @@ public class PIIFilter extends AbstractConnector {
 
             // Check response payload for PII
             if (hasPIIInPayload(messageContext)) {
-                log.warn("PII detected in payload - dropping payload");
-                clearPayload(messageContext);
+                log.warn("PII detected in payload - replacing with masked values");
+                replacePIIInPayload(messageContext);
                 hasSensitiveData = true;
             }
 
@@ -143,6 +143,16 @@ public class PIIFilter extends AbstractConnector {
 
     private String getPayloadAsString(MessageContext messageContext) {
         try {
+            // Try to get JSON payload first
+            org.apache.axis2.context.MessageContext axis2MessageContext = 
+                ((Axis2MessageContext) messageContext).getAxis2MessageContext();
+            
+            // Check if it's a JSON payload
+            if (org.apache.synapse.commons.json.JsonUtil.hasAJsonPayload(axis2MessageContext)) {
+                return org.apache.synapse.commons.json.JsonUtil.jsonPayloadToString(axis2MessageContext);
+            }
+            
+            // Fallback to envelope body if not JSON
             if (messageContext.getEnvelope() != null && 
                 messageContext.getEnvelope().getBody() != null) {
                 return messageContext.getEnvelope().getBody().toString();
@@ -154,16 +164,93 @@ public class PIIFilter extends AbstractConnector {
         }
     }
 
-    private void clearPayload(MessageContext messageContext) {
+    private void replacePIIInPayload(MessageContext messageContext) {
         try {
-            if (messageContext.getEnvelope() != null && 
-                messageContext.getEnvelope().getBody() != null) {
-                // Clear the body content
-                messageContext.getEnvelope().getBody().getFirstElement().detach();
-                log.info("Payload cleared due to PII detection");
+            String payload = getPayloadAsString(messageContext);
+            if (payload != null && !payload.trim().isEmpty()) {
+                String maskedPayload = payload;
+                int replacementCount = 0;
+                
+                // If it's a SOAP envelope containing JSON, extract just the JSON part
+                if (payload.contains("<jsonObject>") && payload.contains("</jsonObject>")) {
+                    // Extract JSON from SOAP envelope
+                    int startIndex = payload.indexOf("<jsonObject>") + "<jsonObject>".length();
+                    int endIndex = payload.indexOf("</jsonObject>");
+                    if (startIndex > 0 && endIndex > startIndex) {
+                        String jsonContent = payload.substring(startIndex, endIndex);
+                        // Convert XML-style JSON back to actual JSON
+                        maskedPayload = convertXmlJsonToJson(jsonContent);
+                    }
+                }
+                
+                // Replace each PII pattern with xxxxxxxxx
+                for (Pattern pattern : PII_PATTERNS) {
+                    String beforeReplacement = maskedPayload;
+                    maskedPayload = pattern.matcher(maskedPayload).replaceAll("xxxxxxxxx");
+                    if (!beforeReplacement.equals(maskedPayload)) {
+                        replacementCount++;
+                    }
+                }
+                
+                if (replacementCount > 0) {
+                    setPayload(messageContext, maskedPayload);
+                    log.warn("Replaced " + replacementCount + " PII pattern(s) with masked values in payload");
+                }
             }
         } catch (Exception e) {
-            log.warn("Error clearing payload", e);
+            log.warn("Error replacing PII in payload", e);
         }
+    }
+    
+    private String convertXmlJsonToJson(String xmlJson) {
+        // Simple conversion from XML-style JSON to proper JSON
+        // This handles basic cases like <email>value</email> -> "email":"value"
+        try {
+            String result = xmlJson;
+            // Replace XML tags with JSON format
+            result = result.replaceAll("<([^>]+)>([^<]*)</\\1>", "\"$1\":\"$2\"");
+            // Add braces if not present
+            if (!result.trim().startsWith("{")) {
+                result = "{" + result + "}";
+            }
+            return result;
+        } catch (Exception e) {
+            log.warn("Error converting XML JSON to JSON", e);
+            return xmlJson;
+        }
+    }
+
+    private void setPayload(MessageContext messageContext, String newPayload) {
+        try {
+            // Cast to get Axis2MessageContext
+            org.apache.axis2.context.MessageContext axis2MessageContext = 
+                ((Axis2MessageContext) messageContext).getAxis2MessageContext();
+            
+            // Always try to set as JSON payload if it looks like JSON
+            if (isJsonString(newPayload)) {
+                // Remove any existing JSON payload first
+                org.apache.synapse.commons.json.JsonUtil.removeJsonPayload(axis2MessageContext);
+                // Set the new JSON payload
+                org.apache.synapse.commons.json.JsonUtil.getNewJsonPayload(
+                    axis2MessageContext, newPayload, true, true);
+            } else {
+                // Fallback for non-JSON content
+                org.apache.synapse.commons.json.JsonUtil.newJsonPayload(
+                    axis2MessageContext, newPayload, true, true);
+            }
+            
+            log.info("Payload updated with masked PII values");
+        } catch (Exception e) {
+            log.warn("Error setting masked payload", e);
+        }
+    }
+    
+    private boolean isJsonString(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return false;
+        }
+        String trimmed = str.trim();
+        return (trimmed.startsWith("{") && trimmed.endsWith("}")) || 
+               (trimmed.startsWith("[") && trimmed.endsWith("]"));
     }
 }

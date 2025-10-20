@@ -47,7 +47,7 @@ public class PIIFilter extends AbstractConnector {
 
     // Sensitive headers to filter
     private static final List<String> SENSITIVE_HEADERS = Arrays.asList(
-        "Authorization", "Cookie", "Set-Cookie", "X-API-Key", "X-Auth-Token",
+        "Authorization", "Cookie", "Set-Cookie", "X-API-Key", "X-Auth-Token", "api-key",
         "Authentication", "Bearer", "Proxy-Authorization", "WWW-Authenticate"
     );
 
